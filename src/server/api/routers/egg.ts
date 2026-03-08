@@ -1,0 +1,42 @@
+import { z } from 'zod';
+import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
+import { eggService } from '~/server/services/egg.service';
+
+export const eggRouter = createTRPCRouter({
+    saveDaily: publicProcedure
+        .input(z.object({
+            countWhite: z.number().min(0),
+            countBrown: z.number().min(0),
+            date: z.coerce.date().optional(),
+        }))
+        .mutation(async ({ input }) => {
+            return eggService.saveDaily(input);
+        }),
+
+    getLatest: publicProcedure.query(async () => {
+        return eggService.getLatest();
+    }),
+
+    getAll: publicProcedure.query(async () => {
+        return eggService.getAll();
+    }),
+
+    delete: publicProcedure
+        .input(z.string())
+        .mutation(async ({ input }) => {
+            return eggService.deleteById(input);
+        }),
+
+    update: publicProcedure
+        .input(z.object({
+            id: z.string(),
+            countWhite: z.number().min(0),
+            countBrown: z.number().min(0),
+        }))
+        .mutation(async ({ input }) => {
+            return eggService.updateById(input.id, {
+                countWhite: input.countWhite,
+                countBrown: input.countBrown,
+            });
+        }),
+});

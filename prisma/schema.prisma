@@ -1,0 +1,39 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model EggCollection {
+  id         String   @id @default(cuid())
+  date       DateTime @default(now())
+  countWhite Int      @default(0) // Švagr (bílá)
+  countBrown Int      @default(0) // Taťka (hnědá)
+  userId     String? // Pro budoucí multi-user, zatím volitelné
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@map("slepicarna_egg_collection")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  type        String // "SALE" | "FEED" | "EXPENSE"
+  amount      Float // v Kč
+  quantity    Int? // Počet vajec nebo kg krmiva
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@map("slepicarna_transaction")
+}
