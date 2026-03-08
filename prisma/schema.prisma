@@ -37,3 +37,20 @@ model Transaction {
   @@index([date])
   @@map("slepicarna_transaction")
 }
+
+model EggWithdrawal {
+  id         String   @id @default(cuid())
+  date       DateTime @default(now())
+  boxCount   Int // Počet krabiček (násobky 10)
+  totalEggs  Int // Celkový počet vajec (boxCount * 10)
+  countBrown Int // Poměrově odečtená hnědá
+  countWhite Int // Poměrově odečtená bílá
+  name       String? // Kdo si vzal
+  thanks     String   @default("Děkuji")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@map("slepicarna_egg_withdrawal")
+}

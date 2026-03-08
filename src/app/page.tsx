@@ -61,7 +61,7 @@ export default function EggTrackerPage() {
   const displayDate = isToday ? "Dnes" : format(new Date(selectedDate), "d. MMMM yyyy", { locale: cs });
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 pb-28 font-sans max-w-md mx-auto">
+    <main className="min-h-screen bg-slate-50 p-4 pb-10 font-sans max-w-md mx-auto">
       <Toaster />
       <header className="mb-8 text-center pt-6 relative">
         <h1 className="text-3xl font-black text-slate-800 tracking-tight">SLEPIČÁRNA 🥚</h1>
@@ -144,12 +144,12 @@ export default function EggTrackerPage() {
       </section>
 
       {/* HLAVNÍ AKCE */}
-      <div className="fixed bottom-6 left-4 right-4 max-w-md mx-auto">
+      <div className="mt-8 mb-4">
         <button
           onClick={handleSave}
           disabled={brown === null || white === null || saveEgg.isPending}
-          className={`w-3/4 py-6 rounded-[2rem] text-2xl font-black shadow-2xl transition-all active:translate-y-1 active:shadow-lg flex items-center justify-center gap-3 ${brown !== null && white !== null && !saveEgg.isPending
-            ? "bg-green-500 text-white hover:bg-green-600"
+          className={`w-3/4 py-6 rounded-3xl text-2xl font-black shadow-xl transition-all active:translate-y-1 active:shadow-lg flex items-center justify-center gap-3 ${brown !== null && white !== null && !saveEgg.isPending
+            ? "bg-green-500 text-white hover:bg-green-600 shadow-green-200"
             : "bg-slate-300 text-slate-400 cursor-not-allowed"
             }`}
         >

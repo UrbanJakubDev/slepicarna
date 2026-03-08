@@ -3,9 +3,9 @@
 import { cookies } from 'next/headers';
 
 export async function loginWithPin(pin: string) {
-    const correctPin = process.env.APP_PIN || '1234';
+    const correctPin = (process.env.APP_PIN || '1234').trim();
 
-    if (pin === correctPin) {
+    if (pin.trim() === correctPin) {
         const cookieStore = await cookies();
         // Set cookie for 30 days
         cookieStore.set('slepicarna_auth', 'authenticated', {

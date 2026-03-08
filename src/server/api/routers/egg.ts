@@ -39,4 +39,22 @@ export const eggRouter = createTRPCRouter({
                 countBrown: input.countBrown,
             });
         }),
+
+    getInventory: publicProcedure.query(async () => {
+        return eggService.getInventory();
+    }),
+
+    withdraw: publicProcedure
+        .input(z.object({
+            boxCount: z.number().min(1).max(10), // Limit 10 krabiček najednou
+            name: z.string().optional(),
+            thanks: z.string().default("Děkuji"),
+        }))
+        .mutation(async ({ input }) => {
+            return eggService.withdraw(input);
+        }),
+
+    getAllWithdrawals: publicProcedure.query(async () => {
+        return eggService.getAllWithdrawals();
+    }),
 });

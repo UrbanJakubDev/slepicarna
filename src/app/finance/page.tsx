@@ -21,10 +21,6 @@ export default function FinancePage() {
 
     const isLoading = isEggsLoading || isTransactionsLoading;
 
-    if (isLoading) {
-        return <div className="p-8 text-center text-slate-500 font-medium animate-pulse">Načítám finance...</div>;
-    }
-
     // --- Výpočty skladu ---
     const totalLaid = (records || []).reduce((sum, r) => sum + r.countBrown + r.countWhite, 0);
     const totalSold = (transactions || []).filter(t => t.type === "SALE").reduce((sum, t) => sum + (t.quantity || 0), 0);
@@ -86,19 +82,33 @@ export default function FinancePage() {
             <section className="grid grid-cols-2 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="bg-white p-5 rounded-3xl shadow-sm flex flex-col items-center border border-slate-100">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Virtuální Sklad</span>
-                    <span className="text-4xl font-black text-slate-800">{remainingEggs}</span>
+                    {isLoading ? (
+                        <div className="h-10 w-16 bg-slate-200 rounded-lg animate-pulse my-1"></div>
+                    ) : (
+                        <span className="text-4xl font-black text-slate-800">{remainingEggs}</span>
+                    )}
                     <span className="text-xs text-slate-400 mt-1 text-center">vajec v lednici (nebo snězeno)</span>
                 </div>
 
-                <div className={`p-5 rounded-3xl shadow-sm flex flex-col items-center border ${roi >= 0 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
-                    <span className={`text-xs font-bold uppercase tracking-widest mb-1 ${roi >= 0 ? 'text-green-600/60' : 'text-red-500/60'}`}>Zisk / Ztráta</span>
-                    <span className={`text-4xl font-black ${roi >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                        {roi > 0 ? '+' : ''}{roi} Kč
-                    </span>
+                <div className={`p-5 rounded-3xl shadow-sm flex flex-col items-center border ${isLoading ? 'bg-slate-50 border-slate-100' : roi >= 0 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                    <span className={`text-xs font-bold uppercase tracking-widest mb-1 ${isLoading ? 'text-slate-400' : roi >= 0 ? 'text-green-600/60' : 'text-red-500/60'}`}>Zisk / Ztráta</span>
+                    {isLoading ? (
+                        <div className="h-10 w-24 bg-slate-200 rounded-lg animate-pulse my-1"></div>
+                    ) : (
+                        <span className={`text-4xl font-black ${roi >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                            {roi > 0 ? '+' : ''}{roi} Kč
+                        </span>
+                    )}
                     <div className="flex gap-2 text-xs mt-1 w-full justify-center">
-                        <span className="text-green-600">+{totalIncome}</span>
-                        <span className="text-slate-300">|</span>
-                        <span className="text-red-500">-{totalExpense}</span>
+                        {isLoading ? (
+                            <div className="h-4 w-28 bg-slate-200 rounded animate-pulse"></div>
+                        ) : (
+                            <>
+                                <span className="text-green-600">+{totalIncome}</span>
+                                <span className="text-slate-300">|</span>
+                                <span className="text-red-500">-{totalExpense}</span>
+                            </>
+                        )}
                     </div>
                 </div>
             </section>
@@ -194,7 +204,23 @@ export default function FinancePage() {
                 </h2>
 
                 <div className="space-y-3">
-                    {(!transactions || transactions.length === 0) ? (
+                    {isLoading ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between border border-slate-100">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-100 animate-pulse"></div>
+                                    <div className="space-y-2">
+                                        <div className="h-4 w-20 bg-slate-100 rounded animate-pulse"></div>
+                                        <div className="h-3 w-28 bg-slate-50 rounded animate-pulse"></div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="h-6 w-16 bg-slate-100 rounded animate-pulse"></div>
+                                    <div className="w-8 h-8 rounded-xl bg-slate-50 animate-pulse"></div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (!transactions || transactions.length === 0) ? (
                         <div className="text-center text-slate-400 py-8 bg-white rounded-3xl">Zatím žádné transakce</div>
                     ) : (
                         transactions.slice(0, 30).map((t) => (

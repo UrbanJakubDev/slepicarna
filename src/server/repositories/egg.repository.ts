@@ -30,4 +30,39 @@ export const eggRepository = {
     delete: async (id: string) => {
         return db.eggCollection.delete({ where: { id } });
     },
+
+    // Výběry (Withdrawals)
+    createWithdrawal: async (data: Prisma.EggWithdrawalCreateInput) => {
+        return db.eggWithdrawal.create({ data });
+    },
+
+    findAllWithdrawals: async () => {
+        return db.eggWithdrawal.findMany({
+            orderBy: { date: 'desc' },
+        });
+    },
+
+    // Sumární statistiky pro sklad
+    getTotals: async () => {
+        const collections = await db.eggCollection.aggregate({
+            _sum: {
+                countBrown: true,
+                countWhite: true,
+            }
+        });
+
+        const withdrawals = await db.eggWithdrawal.aggregate({
+            _sum: {
+                countBrown: true,
+                countWhite: true,
+            }
+        });
+
+        return {
+            collectedBrown: collections._sum.countBrown || 0,
+            collectedWhite: collections._sum.countWhite || 0,
+            withdrawnBrown: withdrawals._sum.countBrown || 0,
+            withdrawnWhite: withdrawals._sum.countWhite || 0,
+        };
+    }
 };

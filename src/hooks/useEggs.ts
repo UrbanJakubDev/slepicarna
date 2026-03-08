@@ -52,3 +52,21 @@ export function useUpdateEgg() {
     },
   });
 }
+
+export function useInventory() {
+  return api.egg.getInventory.useQuery();
+}
+
+export function useWithdrawEggs() {
+  const utils = api.useUtils();
+  return api.egg.withdraw.useMutation({
+    onSuccess: () => {
+      void utils.egg.getInventory.invalidate();
+      void utils.egg.getAllWithdrawals.invalidate();
+    },
+  });
+}
+
+export function useWithdrawals() {
+  return api.egg.getAllWithdrawals.useQuery();
+}
