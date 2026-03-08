@@ -27,7 +27,7 @@ export default function StatsPage() {
     const deleteEgg = useDeleteEgg();
     const updateEgg = useUpdateEgg();
     const { data: inventory } = useInventory();
-    const { data: withdrawals } = useWithdrawals();
+    const { data: withdrawals } = api.egg.getAllWithdrawals.useQuery();
 
     // Stavy pro inline editaci historie
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -388,7 +388,7 @@ export default function StatsPage() {
                     ) : !withdrawals || withdrawals.length === 0 ? (
                         <div className="text-center text-slate-400 py-8 bg-white rounded-3xl shadow-sm border border-slate-100">Zatím žádné odběry</div>
                     ) : (
-                        withdrawals.map((w) => (
+                        withdrawals.map((w: any) => (
                             <div key={w.id} className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col gap-3">
                                 <div className="flex justify-between items-start">
                                     <div>
