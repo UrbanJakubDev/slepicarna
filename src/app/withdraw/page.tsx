@@ -58,24 +58,7 @@ export default function WithdrawPage() {
                         <p className="text-3xl font-black text-slate-800">{inventoryTotal} ks</p>
                     )}
                 </div>
-                <div className="flex gap-4 text-right">
-                    <div>
-                        <span className="text-[10px] font-bold text-[#8B4513]/60 uppercase">Hnědá</span>
-                        {isInvLoading ? (
-                            <div className="h-5 w-8 bg-orange-50 rounded animate-pulse ml-auto"></div>
-                        ) : (
-                            <p className="font-bold text-[#8B4513]">{inventory?.brown ?? 0}</p>
-                        )}
-                    </div>
-                    <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Bílá</span>
-                        {isInvLoading ? (
-                            <div className="h-5 w-8 bg-slate-50 rounded animate-pulse ml-auto"></div>
-                        ) : (
-                            <p className="font-bold text-slate-600">{inventory?.white ?? 0}</p>
-                        )}
-                    </div>
-                </div>
+
             </section>
 
             {/* Výběr krabiček */}
