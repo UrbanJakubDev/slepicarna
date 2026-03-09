@@ -13,7 +13,7 @@ export default function FinancePage() {
     const createTransaction = useCreateTransaction();
     const deleteTransaction = useDeleteTransaction();
 
-    const [type, setType] = useState<"SALE" | "EXPENSE">("SALE");
+    const [type, setType] = useState<"SALE" | "EXPENSE" | "FEED">("SALE");
     const [amount, setAmount] = useState<string>("");
     const [quantity, setQuantity] = useState<string>("");
     const [description, setDescription] = useState<string>("");
@@ -22,15 +22,15 @@ export default function FinancePage() {
     const isLoading = isEggsLoading || isTransactionsLoading;
 
     // --- Výpočty skladu ---
-    const totalLaid = (records || []).reduce((sum, r) => sum + r.countBrown + r.countWhite, 0);
-    const totalSold = (transactions || []).filter(t => t.type === "SALE").reduce((sum, t) => sum + (t.quantity || 0), 0);
+    const totalLaid = (records || []).reduce((sum: number, r: any) => sum + r.countBrown + r.countWhite, 0);
+    const totalSold = (transactions || []).filter((t: any) => t.type === "SALE").reduce((sum: number, t: any) => sum + (t.quantity || 0), 0);
 
     // Tohle je jen prostý rozdíl – "zbytek" co leží v lednici nebo se už snědl rodinou
     const remainingEggs = totalLaid - totalSold;
 
     // --- Výpočty ROI ---
-    const totalIncome = (transactions || []).filter(t => t.type === "SALE").reduce((sum, t) => sum + t.amount, 0);
-    const totalExpense = (transactions || []).filter(t => t.type === "EXPENSE").reduce((sum, t) => sum + t.amount, 0);
+    const totalIncome = (transactions || []).filter((t: any) => t.type === "SALE").reduce((sum: number, t: any) => sum + t.amount, 0);
+    const totalExpense = (transactions || []).filter((t: any) => (t.type === "EXPENSE" || t.type === "FEED")).reduce((sum: number, t: any) => sum + t.amount, 0);
     const roi = totalIncome - totalExpense;
 
     const handleSave = async (e: React.FormEvent) => {
@@ -67,9 +67,21 @@ export default function FinancePage() {
         }
     };
 
-    const getTransactionIcon = (tType: string) => tType === "SALE" ? "📈" : "📉";
-    const getTransactionColor = (tType: string) => tType === "SALE" ? "text-green-600" : "text-red-500";
-    const getTransactionBg = (tType: string) => tType === "SALE" ? "bg-green-50" : "bg-red-50";
+    const getTransactionIcon = (tType: string) => {
+        if (tType === "SALE") return "📈";
+        if (tType === "FEED") return "🌾";
+        return "📉";
+    };
+    const getTransactionColor = (tType: string) => {
+        if (tType === "SALE") return "text-green-600";
+        if (tType === "FEED") return "text-orange-600";
+        return "text-red-500";
+    };
+    const getTransactionBg = (tType: string) => {
+        if (tType === "SALE") return "bg-green-50";
+        if (tType === "FEED") return "bg-orange-50";
+        return "bg-red-50";
+    };
 
     return (
         <main className="min-h-screen bg-slate-50 p-4 pb-28 font-sans max-w-2xl mx-auto">
@@ -130,20 +142,27 @@ export default function FinancePage() {
                     </div>
 
                     <form onSubmit={handleSave} className="space-y-4">
-                        <div className="flex bg-slate-100 p-1 rounded-2xl">
+                        <div className="flex bg-slate-100 p-1 rounded-2xl gap-1">
                             <button
                                 type="button"
                                 onClick={() => setType("SALE")}
-                                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${type === "SALE" ? "bg-white text-green-600 shadow-sm" : "text-slate-500"}`}
+                                className={`flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${type === "SALE" ? "bg-white text-green-600 shadow-sm" : "text-slate-500"}`}
                             >
-                                Prodej vajec
+                                Prodej
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setType("FEED")}
+                                className={`flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${type === "FEED" ? "bg-white text-orange-600 shadow-sm" : "text-slate-500"}`}
+                            >
+                                Krmivo
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setType("EXPENSE")}
-                                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${type === "EXPENSE" ? "bg-white text-red-500 shadow-sm" : "text-slate-500"}`}
+                                className={`flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${type === "EXPENSE" ? "bg-white text-red-500 shadow-sm" : "text-slate-500"}`}
                             >
-                                Náklad (krmivo atd.)
+                                Ostatní
                             </button>
                         </div>
 
@@ -188,7 +207,9 @@ export default function FinancePage() {
                             disabled={createTransaction.isPending || !amount}
                             className={`w-full py-4 mt-2 rounded-2xl font-black text-white shadow-lg transition-all active:translate-y-1 ${createTransaction.isPending || !amount
                                 ? "bg-slate-300 cursor-not-allowed"
-                                : type === "SALE" ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
+                                : type === "SALE" ? "bg-green-500 hover:bg-green-600"
+                                    : type === "FEED" ? "bg-orange-500 hover:bg-orange-600"
+                                        : "bg-red-500 hover:bg-red-600"
                                 }`}
                         >
                             {createTransaction.isPending ? "UKLÁDÁM..." : "ULOŽIT ZÁZNAM"}
@@ -231,7 +252,7 @@ export default function FinancePage() {
                                     </div>
                                     <div>
                                         <div className="font-bold text-slate-800">
-                                            {t.type === "SALE" ? "Prodej" : "Náklad"}
+                                            {t.type === "SALE" ? "Prodej" : t.type === "FEED" ? "Krmivo" : "Ostatní"}
                                             {t.quantity && t.type === "SALE" && <span className="text-slate-500 font-normal ml-1">({t.quantity} ks)</span>}
                                         </div>
                                         <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">

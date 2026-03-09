@@ -5,7 +5,7 @@ import { transactionService } from '~/server/services/transaction.service';
 export const transactionRouter = createTRPCRouter({
     create: publicProcedure
         .input(z.object({
-            type: z.enum(['SALE', 'EXPENSE']),
+            type: z.enum(['SALE', 'EXPENSE', 'FEED']),
             amount: z.number().min(0),
             quantity: z.number().optional(),
             description: z.string().optional(),

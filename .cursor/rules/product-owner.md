@@ -1,0 +1,1 @@
+/Users/jakuburban/Documents/Obsidian Vault/02_Znalosti/AI_Brain/Roles/Product Owner.md

@@ -57,4 +57,10 @@ export const eggRouter = createTRPCRouter({
     getAllWithdrawals: publicProcedure.query(async () => {
         return eggService.getAllWithdrawals();
     }),
+
+    getProductionCost: publicProcedure
+        .input(z.object({ days: z.number().default(30) }))
+        .query(async ({ input }) => {
+            return eggService.getProductionCost(input.days);
+        }),
 });

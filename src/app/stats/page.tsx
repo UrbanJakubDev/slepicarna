@@ -28,6 +28,7 @@ export default function StatsPage() {
     const updateEgg = useUpdateEgg();
     const { data: inventory } = useInventory();
     const { data: withdrawals } = api.egg.getAllWithdrawals.useQuery();
+    const { data: costData, isLoading: isCostLoading } = api.egg.getProductionCost.useQuery({ days: 30 });
 
     // Stavy pro inline editaci historie
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,18 +41,18 @@ export default function StatsPage() {
     // Data pro graf vývoje (posledních 14 dní)
     const fourteenDaysAgo = startOfDay(subDays(new Date(), 14));
     const recentRecords = sortedRecords
-        .filter(r => new Date(r.date) >= fourteenDaysAgo)
+        .filter((r: any) => new Date(r.date) >= fourteenDaysAgo)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // pro graf rostoucí odleva doprava
 
-    const chartData = recentRecords.map(r => ({
+    const chartData = recentRecords.map((r: any) => ({
         name: format(new Date(r.date), "d.M.", { locale: cs }),
         Hnědá: r.countBrown,
         Bílá: r.countWhite,
     }));
 
     // Celková vajíčka pro koláčový graf
-    const totalBrown = sortedRecords.reduce((sum, r) => sum + r.countBrown, 0);
-    const totalWhite = sortedRecords.reduce((sum, r) => sum + r.countWhite, 0);
+    const totalBrown = sortedRecords.reduce((sum: number, r: any) => sum + r.countBrown, 0);
+    const totalWhite = sortedRecords.reduce((sum: number, r: any) => sum + r.countWhite, 0);
 
     const pieData = [
         { name: "Hnědá (Taťka)", value: totalBrown },
@@ -100,45 +101,46 @@ export default function StatsPage() {
         <main className="min-h-screen bg-slate-50 p-4 pb-28 font-sans max-w-2xl mx-auto">
             <Toaster />
             <header className="mb-8 pt-6 relative border-b border-slate-200 pb-4 print:hidden">
-                <div className="absolute top-6 right-2">
-                    <button
-                        onClick={() => window.print()}
-                        className="text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full font-bold transition-all flex items-center gap-2"
-                        title="Exportovat PDF"
-                    >
-                        📄 Export
-                    </button>
-                </div>
                 <h1 className="text-3xl font-black text-slate-800 tracking-tight text-center">STATISTIKY 📊</h1>
             </header>
             <div className="hidden print:block mb-8 text-center pt-6 border-b border-slate-200 pb-4">
                 <h1 className="text-3xl font-black text-slate-800 tracking-tight">Slepičárna: Report (Dnes)</h1>
             </div>
 
-            {/* Karty s průměry */}
-            <section className="grid grid-cols-3 gap-3 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="bg-white p-4 rounded-3xl shadow-sm text-center border-b-4 border-slate-200">
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Průměr / den</div>
+            {/* Karty s průměry a ekonomikou */}
+            <section className="grid grid-cols-2 gap-3 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-white p-4 rounded-3xl shadow-sm border-b-4 border-slate-200">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Průměr / den</div>
                     {isLoading ? (
                         <div className="h-9 w-12 bg-slate-100 rounded-lg animate-pulse mx-auto my-0.5"></div>
                     ) : (
-                        <div className="text-3xl font-black text-slate-800">{avgTotal}</div>
+                        <div className="text-3xl font-black text-slate-800">{avgTotal} <span className="text-sm font-bold text-slate-400">ks</span></div>
                     )}
                 </div>
+
+                <div className="bg-white p-4 rounded-3xl shadow-sm border-b-4 border-orange-200">
+                    <div className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-1">Cena za vejce</div>
+                    {isCostLoading ? (
+                        <div className="h-9 w-20 bg-orange-50 rounded-lg animate-pulse mx-auto my-0.5"></div>
+                    ) : (
+                        <div className="text-3xl font-black text-orange-600">{costData?.costPerEgg ?? 0} <span className="text-sm font-bold text-orange-400">Kč</span></div>
+                    )}
+                </div>
+
                 <div className="bg-orange-50 p-4 rounded-3xl shadow-sm text-center border-b-4 border-orange-200">
-                    <div className="text-xs font-bold text-[#8B4513]/60 uppercase tracking-widest mb-1">Hnědé</div>
+                    <div className="text-[10px] font-bold text-[#8B4513]/60 uppercase tracking-widest mb-1">Hnědé (avg)</div>
                     {isLoading ? (
                         <div className="h-9 w-12 bg-orange-100/50 rounded-lg animate-pulse mx-auto my-0.5"></div>
                     ) : (
-                        <div className="text-3xl font-black text-[#8B4513]">{avgBrown}</div>
+                        <div className="text-2xl font-black text-[#8B4513]">{avgBrown}</div>
                     )}
                 </div>
                 <div className="bg-slate-100 p-4 rounded-3xl shadow-sm text-center border-b-4 border-slate-300">
-                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Bílé</div>
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Bílé (avg)</div>
                     {isLoading ? (
                         <div className="h-9 w-12 bg-slate-200/50 rounded-lg animate-pulse mx-auto my-0.5"></div>
                     ) : (
-                        <div className="text-3xl font-black text-slate-700">{avgWhite}</div>
+                        <div className="text-2xl font-black text-slate-700">{avgWhite}</div>
                     )}
                 </div>
             </section>

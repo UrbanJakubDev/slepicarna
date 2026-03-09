@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server';
+import { db } from '~/server/db';
 import { eggRepository } from '~/server/repositories/egg.repository';
 
 export const eggService = {
@@ -101,5 +102,36 @@ export const eggService = {
 
     getAllWithdrawals: async () => {
         return eggRepository.findAllWithdrawals();
+    },
+
+    getProductionCost: async (days = 30) => {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        // 1. Získáme všechny záznamy o snůšce za období
+        const eggRecords = await eggRepository.findAll({
+            date: { gte: startDate }
+        });
+
+        const totalEggs = eggRecords.reduce((sum: number, r: any) => sum + r.countBrown + r.countWhite, 0);
+
+        // 2. Získáme všechny výdaje za krmivo za stejné období
+        const feedTransactions = await db.transaction.findMany({
+            where: {
+                type: 'FEED',
+                date: { gte: startDate }
+            }
+        });
+
+        const totalFeedCost = feedTransactions.reduce((sum: number, t: any) => sum + t.amount, 0);
+
+        if (totalEggs === 0) return { costPerEgg: 0, totalEggs: 0, totalCost: totalFeedCost };
+
+        return {
+            costPerEgg: Number((totalFeedCost / totalEggs).toFixed(2)),
+            totalEggs,
+            totalCost: totalFeedCost,
+            periodDays: days
+        };
     }
 };
