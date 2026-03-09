@@ -12,8 +12,7 @@ datasource db {
 model EggCollection {
   id         String   @id @default(cuid())
   date       DateTime @default(now())
-  countWhite Int      @default(0) // Švagr (bílá)
-  countBrown Int      @default(0) // Taťka (hnědá)
+  count      Int      @default(0)
   userId     String? // Pro budoucí multi-user, zatím volitelné
 
   createdAt DateTime @default(now())
@@ -43,8 +42,6 @@ model EggWithdrawal {
   date       DateTime @default(now())
   boxCount   Int // Počet krabiček (násobky 10)
   totalEggs  Int // Celkový počet vajec (boxCount * 10)
-  countBrown Int // Poměrově odečtená hnědá
-  countWhite Int // Poměrově odečtená bílá
   name       String? // Kdo si vzal
   thanks     String   @default("Děkuji")
 
@@ -53,4 +50,16 @@ model EggWithdrawal {
 
   @@index([date])
   @@map("slepicarna_egg_withdrawal")
+}
+
+model FlockHistory {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  count     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@map("slepicarna_flock_history")
 }

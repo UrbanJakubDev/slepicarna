@@ -19,6 +19,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { api } from "~/trpc/react";
 import { useDeleteEgg, useUpdateEgg, useInventory, useWithdrawals } from "~/hooks/useEggs";
+import { useFlock } from "~/hooks/useFlock";
 
 const COLORS = ["#8B4513", "#cbd5e1"]; // hnědá a světle šedá pro bílou
 
@@ -29,41 +30,39 @@ export default function StatsPage() {
     const { data: inventory } = useInventory();
     const { data: withdrawals } = api.egg.getAllWithdrawals.useQuery();
     const { data: costData, isLoading: isCostLoading } = api.egg.getProductionCost.useQuery({ days: 30 });
+    const { data: flockHistory } = useFlock();
+
+    const currentFlockSize = flockHistory?.[0]?.count ?? 0;
 
     // Stavy pro inline editaci historie
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editBrown, setEditBrown] = useState<number>(0);
-    const [editWhite, setEditWhite] = useState<number>(0);
+    const [editCount, setEditCount] = useState<number>(0);
+    const [timeRange, setTimeRange] = useState<number>(14);
 
     // Příprava dat
     const sortedRecords = [...(records || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    // Data pro graf vývoje (posledních 14 dní)
-    const fourteenDaysAgo = startOfDay(subDays(new Date(), 14));
+    // Data pro graf vývoje
+    const timeAgo = startOfDay(subDays(new Date(), timeRange));
     const recentRecords = sortedRecords
-        .filter((r: any) => new Date(r.date) >= fourteenDaysAgo)
+        .filter((r: any) => new Date(r.date) >= timeAgo)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // pro graf rostoucí odleva doprava
 
     const chartData = recentRecords.map((r: any) => ({
         name: format(new Date(r.date), "d.M.", { locale: cs }),
-        Hnědá: r.countBrown,
-        Bílá: r.countWhite,
+        Vejce: r.count,
     }));
 
-    // Celková vajíčka pro koláčový graf
-    const totalBrown = sortedRecords.reduce((sum: number, r: any) => sum + r.countBrown, 0);
-    const totalWhite = sortedRecords.reduce((sum: number, r: any) => sum + r.countWhite, 0);
+    // Celková vajíčka (za vybrané období)
+    const totalEggs = recentRecords.reduce((sum: number, r: any) => sum + r.count, 0);
 
-    const pieData = [
-        { name: "Hnědá (Taťka)", value: totalBrown },
-        { name: "Bílá (Filip)", value: totalWhite },
-    ];
-
-    // Průměry z celku
-    const totalDays = sortedRecords.length || 1;
-    const avgTotal = ((totalBrown + totalWhite) / totalDays).toFixed(1);
-    const avgBrown = (totalBrown / totalDays).toFixed(1);
-    const avgWhite = (totalWhite / totalDays).toFixed(1);
+    // Průměr z vybraného období
+    // Skutečný počet dnů ve vybraném období je buď timeRange, nebo length `recentRecords`
+    // Lepší je dělit reálným rozsahem (timeRange), ale pokud je záznamů málo (např. začátek), tak length.
+    const activeDays = Math.max(recentRecords.length, 1);
+    const avgTotalValue = totalEggs / activeDays;
+    const avgTotal = avgTotalValue.toFixed(1);
+    const eggsPerHen = currentFlockSize > 0 ? (avgTotalValue / currentFlockSize).toFixed(2) : "0.00";
 
     // Historie - mazání
     const handleDelete = async (id: string) => {
@@ -79,16 +78,14 @@ export default function StatsPage() {
     // Historie - inline editace
     const handleEditStart = (r: any) => {
         setEditingId(r.id);
-        setEditBrown(r.countBrown);
-        setEditWhite(r.countWhite);
+        setEditCount(r.count);
     };
 
     const handleEditSave = async (id: string) => {
         try {
             await updateEgg.mutateAsync({
                 id,
-                countBrown: editBrown,
-                countWhite: editWhite,
+                count: editCount,
             });
             toast.success("Záznam upraven");
             setEditingId(null);
@@ -107,8 +104,25 @@ export default function StatsPage() {
                 <h1 className="text-3xl font-black text-slate-800 tracking-tight">Slepičárna: Report (Dnes)</h1>
             </div>
 
+            {/* Filtr Období */}
+            <div className="flex justify-between items-center mb-6 px-2">
+                <h2 className="text-lg font-bold text-slate-600">
+                    Přehled za období:
+                </h2>
+                <select
+                    value={timeRange}
+                    onChange={(e) => setTimeRange(Number(e.target.value))}
+                    className="bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl py-2 px-4 shadow-sm focus:outline-none focus:border-[#8B4513] transition-colors"
+                >
+                    <option value={14}>Posledních 14 dnů</option>
+                    <option value={30}>Poslední měsíc</option>
+                    <option value={180}>Poslední půl rok</option>
+                    <option value={365}>Poslední rok</option>
+                </select>
+            </div>
+
             {/* Karty s průměry a ekonomikou */}
-            <section className="grid grid-cols-2 gap-3 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <section className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="bg-white p-4 rounded-3xl shadow-sm border-b-4 border-slate-200">
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Průměr / den</div>
                     {isLoading ? (
@@ -127,63 +141,37 @@ export default function StatsPage() {
                     )}
                 </div>
 
-                <div className="bg-orange-50 p-4 rounded-3xl shadow-sm text-center border-b-4 border-orange-200">
-                    <div className="text-[10px] font-bold text-[#8B4513]/60 uppercase tracking-widest mb-1">Hnědé (avg)</div>
+                <div className="bg-white p-4 rounded-3xl shadow-sm border-b-4 border-emerald-200 col-span-2 sm:col-span-1">
+                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Na slepici / den</div>
                     {isLoading ? (
-                        <div className="h-9 w-12 bg-orange-100/50 rounded-lg animate-pulse mx-auto my-0.5"></div>
+                        <div className="h-9 w-16 bg-emerald-50 rounded-lg animate-pulse mx-auto my-0.5"></div>
                     ) : (
-                        <div className="text-2xl font-black text-[#8B4513]">{avgBrown}</div>
-                    )}
-                </div>
-                <div className="bg-slate-100 p-4 rounded-3xl shadow-sm text-center border-b-4 border-slate-300">
-                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Bílé (avg)</div>
-                    {isLoading ? (
-                        <div className="h-9 w-12 bg-slate-200/50 rounded-lg animate-pulse mx-auto my-0.5"></div>
-                    ) : (
-                        <div className="text-2xl font-black text-slate-700">{avgWhite}</div>
+                        <div className="text-3xl font-black text-emerald-700">{eggsPerHen} <span className="text-sm font-bold text-emerald-500">ks/sl.</span></div>
                     )}
                 </div>
             </section>
 
             {/* AKTUÁLNÍ SKLAD (ZÁSOBY) */}
-            <section className="bg-slate-800 text-white p-6 rounded-3xl shadow-xl mb-10 flex flex-col md:flex-row justify-between items-center gap-6 animate-in fade-in duration-700">
-                <div className="text-center md:text-left">
-                    <h2 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Aktuální sklad (po odběrech)</h2>
-                    <div className="flex items-baseline gap-2">
-                        {isLoading ? (
-                            <div className="h-12 w-20 bg-slate-700 rounded-xl animate-pulse my-1"></div>
-                        ) : (
-                            <span className="text-5xl font-black text-white">{inventory?.total ?? 0}</span>
-                        )}
-                        <span className="text-xl font-bold text-slate-400 uppercase tracking-tight">ks vajec</span>
-                    </div>
-                </div>
-                <div className="flex gap-4">
-                    <div className="bg-slate-700/50 px-6 py-4 rounded-2xl border border-slate-600/50 text-center min-w-[100px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Hnědá</span>
-                        {isLoading ? (
-                            <div className="h-8 w-10 bg-slate-600 rounded-lg animate-pulse mx-auto"></div>
-                        ) : (
-                            <span className="text-2xl font-black text-white">{inventory?.brown ?? 0}</span>
-                        )}
-                    </div>
-                    <div className="bg-slate-700/50 px-6 py-4 rounded-2xl border border-slate-600/50 text-center min-w-[100px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bílá</span>
-                        {isLoading ? (
-                            <div className="h-8 w-10 bg-slate-600 rounded-lg animate-pulse mx-auto"></div>
-                        ) : (
-                            <span className="text-2xl font-black text-white">{inventory?.white ?? 0}</span>
-                        )}
-                    </div>
+            <section className="bg-slate-800 text-white p-6 rounded-3xl shadow-xl mb-10 flex flex-col items-center gap-4 animate-in fade-in duration-700 text-center">
+                <h2 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Aktuální sklad (po odběrech)</h2>
+                <div className="flex items-baseline gap-2">
+                    {isLoading ? (
+                        <div className="h-12 w-20 bg-slate-700 rounded-xl animate-pulse my-1"></div>
+                    ) : (
+                        <span className="text-5xl font-black text-white">{inventory?.total ?? 0}</span>
+                    )}
+                    <span className="text-xl font-bold text-slate-400 uppercase tracking-tight">ks vajec</span>
                 </div>
             </section>
 
 
             {/* Graf vývoje */}
             <section className="bg-white p-6 rounded-3xl shadow-sm mb-8 animate-in fade-in">
-                <h2 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-2">
-                    📈 Vývoj snůšky (14 dní)
-                </h2>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-slate-700 flex items-center gap-2">
+                        📈 Vývoj snůšky
+                    </h2>
+                </div>
                 <div className="h-[250px] w-full">
                     {isLoading ? (
                         <div className="h-full w-full bg-slate-50 rounded-2xl animate-pulse flex items-end justify-around p-4">
@@ -216,53 +204,11 @@ export default function StatsPage() {
                                     itemStyle={{ fontWeight: 'bold' }}
                                 />
                                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                                <Line type="monotone" dataKey="Hnědá" stroke={COLORS[0]} strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                                <Line type="monotone" dataKey="Bílá" stroke={COLORS[1]} strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="Vejce" stroke={COLORS[0]} strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     ) : (
                         <div className="h-full flex items-center justify-center text-slate-400">Málo dat pro graf</div>
-                    )}
-                </div>
-            </section>
-
-            {/* Koláčový graf srovnání */}
-            <section className="bg-white p-6 rounded-3xl shadow-sm mb-12 animate-in fade-in">
-                <h2 className="text-xl font-bold text-slate-700 mb-2 flex items-center gap-2">
-                    ⚖️ Podíl produkce celkem
-                </h2>
-                <div className="h-[200px] w-full flex items-center justify-center relative">
-                    {isLoading ? (
-                        <div className="w-32 h-32 rounded-full border-8 border-slate-100 border-t-slate-200 animate-spin"></div>
-                    ) : (totalBrown > 0 || totalWhite > 0) ? (
-                        <>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={pieData}
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                        stroke="none"
-                                    >
-                                        {pieData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                        itemStyle={{ fontWeight: 'bold', color: '#333' }}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                                <span className="text-3xl font-black text-slate-800">{totalBrown + totalWhite}</span>
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Vajec</span>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="text-slate-400">Žádná data</div>
                     )}
                 </div>
             </section>
@@ -301,22 +247,12 @@ export default function StatsPage() {
                                         {isEditing ? (
                                             <div className="flex gap-4 items-center">
                                                 <div className="flex items-center gap-2 bg-orange-50 px-3 py-2 rounded-xl">
-                                                    <span className="text-lg">🟤</span>
+                                                    <span className="text-lg">🥚</span>
                                                     <input
                                                         type="number"
-                                                        value={editBrown}
-                                                        onChange={(e) => setEditBrown(Number(e.target.value))}
+                                                        value={editCount}
+                                                        onChange={(e) => setEditCount(Number(e.target.value))}
                                                         className="w-16 text-xl font-black bg-transparent border-none text-center focus:outline-none text-[#8B4513]"
-                                                        min="0"
-                                                    />
-                                                </div>
-                                                <div className="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl">
-                                                    <span className="text-lg">⚪️</span>
-                                                    <input
-                                                        type="number"
-                                                        value={editWhite}
-                                                        onChange={(e) => setEditWhite(Number(e.target.value))}
-                                                        className="w-16 text-xl font-black bg-transparent border-none text-center focus:outline-none text-slate-700"
                                                         min="0"
                                                     />
                                                 </div>
@@ -324,13 +260,8 @@ export default function StatsPage() {
                                         ) : (
                                             <div className="flex gap-6 items-center">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hnědá</span>
-                                                    <div className="text-2xl font-black text-[#8B4513]">{r.countBrown}</div>
-                                                </div>
-                                                <div className="w-px h-8 bg-slate-200"></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Bílá</span>
-                                                    <div className="text-2xl font-black text-slate-700">{r.countWhite}</div>
+                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sebráno celkem</span>
+                                                    <div className="text-2xl font-black text-slate-700">{r.count}</div>
                                                 </div>
                                             </div>
                                         )}
@@ -408,10 +339,6 @@ export default function StatsPage() {
                                 <div className="flex gap-4 items-center pt-2 border-t border-slate-50">
                                     <div className="text-sm font-medium text-slate-500 italic">
                                         &quot;{w.thanks}&quot;
-                                    </div>
-                                    <div className="ml-auto flex gap-3 text-[11px] font-bold uppercase tracking-tight">
-                                        <span className="text-[#8B4513]">H: {w.countBrown}</span>
-                                        <span className="text-slate-400">B: {w.countWhite}</span>
                                     </div>
                                 </div>
                             </div>

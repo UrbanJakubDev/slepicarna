@@ -46,23 +46,19 @@ export const eggRepository = {
     getTotals: async () => {
         const collections = await db.eggCollection.aggregate({
             _sum: {
-                countBrown: true,
-                countWhite: true,
+                count: true,
             }
         });
 
         const withdrawals = await db.eggWithdrawal.aggregate({
             _sum: {
-                countBrown: true,
-                countWhite: true,
+                totalEggs: true,
             }
         });
 
         return {
-            collectedBrown: collections._sum.countBrown || 0,
-            collectedWhite: collections._sum.countWhite || 0,
-            withdrawnBrown: withdrawals._sum.countBrown || 0,
-            withdrawnWhite: withdrawals._sum.countWhite || 0,
+            collected: collections._sum.count || 0,
+            withdrawn: withdrawals._sum.totalEggs || 0,
         };
     }
 };

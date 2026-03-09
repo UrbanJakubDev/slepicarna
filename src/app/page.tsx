@@ -11,8 +11,7 @@ import { api } from "~/trpc/react";
 import Whisk from "../../public/images/Whisk_eed57d3d88da7899bd9466b9401b07c5eg.png";
 
 export default function EggTrackerPage() {
-  const [brown, setBrown] = useState<number | null>(null);
-  const [white, setWhite] = useState<number | null>(null);
+  const [count, setCount] = useState<number | null>(null);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
@@ -26,16 +25,14 @@ export default function EggTrackerPage() {
       // records.date je dateTime string z databáze
       const recordForDate = records.find(r => new Date(r.date).toISOString().split('T')[0] === selectedDate);
       if (recordForDate) {
-        setBrown(recordForDate.countBrown);
-        setWhite(recordForDate.countWhite);
+        setCount(recordForDate.count);
       } else {
-        setBrown(null);
-        setWhite(null);
+        setCount(null);
       }
     }
   }, [selectedDate, records]);
 
-  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
+  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30]; // Expanded numbers a little
 
   const handlePrevDay = () => {
     setSelectedDate(prev => {
@@ -54,18 +51,17 @@ export default function EggTrackerPage() {
   };
 
   const handleSave = async () => {
-    if (brown === null || white === null) {
-      toast.error("Vyber počet pro oba druhy!");
+    if (count === null) {
+      toast.error("Vyber počet vajec!");
       return;
     }
 
     try {
       await saveEgg.mutateAsync({
-        countBrown: brown,
-        countWhite: white,
+        count: count,
         date: new Date(selectedDate),
       });
-      toast.success(`Uloženo! Hnědá: ${brown}, Bílá: ${white}`, {
+      toast.success(`Uloženo! Celkem: ${count} vajec`, {
         duration: 4000,
         position: 'top-center',
         icon: '🧺',
@@ -136,18 +132,18 @@ export default function EggTrackerPage() {
           </div>
         </header>
 
-        {/* SEKCE HNĚDÁ (Taťka) */}
+        {/* SEKCE VAJÍČKA */}
         <section className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white/70 p-5 rounded-[40px] border border-white shadow-sm">
           <div className="flex justify-between items-end mb-6 px-2">
-            <h2 className="text-xl font-bold text-[#8B4513] tracking-tight">🟤 HNĚDÁ</h2>
+            <h2 className="text-xl font-bold text-slate-700 tracking-tight">🥚 SEBRÁNO</h2>
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold text-[#8B4513]/60 uppercase tracking-widest mb-1">Dnes sebráno</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Dnes celkem</span>
               <div className="flex items-center gap-3">
-                <span className="text-6xl font-black text-[#8B4513] leading-none drop-shadow-sm">{brown ?? '0'}</span>
-                {(brown ?? 0) > 0 && (
+                <span className="text-6xl font-black text-slate-800 leading-none drop-shadow-sm">{count ?? '0'}</span>
+                {(count ?? 0) > 0 && (
                   <button
-                    onClick={() => setBrown(0)}
-                    className="w-10 h-10 flex items-center justify-center bg-orange-100 text-[#8B4513] rounded-full hover:bg-orange-200 transition-colors shadow-inner"
+                    onClick={() => setCount(0)}
+                    className="w-10 h-10 flex items-center justify-center bg-slate-200 text-slate-600 rounded-full hover:bg-slate-300 transition-colors shadow-inner"
                     title="Reset"
                   >
                     ✕
@@ -160,41 +156,8 @@ export default function EggTrackerPage() {
             {numbers.map((n) => (
               <button
                 key={n}
-                onClick={() => setBrown((prev) => (prev ?? 0) + n)}
-                className="h-16 rounded-3xl text-xl font-black transition-all active:scale-90 bg-orange-50 text-[#8B4513] border-b-4 border-orange-200 hover:bg-orange-100 active:border-b-0 active:translate-y-1"
-              >
-                +{n}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* SEKCE BÍLÁ (Filip) */}
-        <section className="mb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white/70 p-5 rounded-[40px] border border-white shadow-sm">
-          <div className="flex justify-between items-end mb-6 px-2">
-            <h2 className="text-xl font-bold text-slate-600 tracking-tight">⚪️ BÍLÁ</h2>
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Dnes sebráno</span>
-              <div className="flex items-center gap-3">
-                <span className="text-6xl font-black text-slate-800 leading-none drop-shadow-sm">{white ?? '0'}</span>
-                {(white ?? 0) > 0 && (
-                  <button
-                    onClick={() => setWhite(0)}
-                    className="w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-colors shadow-inner"
-                    title="Reset"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-4 gap-2.5">
-            {numbers.map((n) => (
-              <button
-                key={n}
-                onClick={() => setWhite((prev) => (prev ?? 0) + n)}
-                className="h-16 rounded-3xl text-xl font-black transition-all active:scale-90 bg-white text-slate-600 border-b-4 border-slate-200 shadow-sm hover:bg-slate-50 active:border-b-0 active:translate-y-1"
+                onClick={() => setCount((prev) => (prev ?? 0) + n)}
+                className="h-14 sm:h-16 rounded-3xl text-xl font-black transition-all active:scale-90 bg-white text-slate-600 border-b-4 border-slate-200 shadow-sm hover:bg-slate-50 active:border-b-0 active:translate-y-1"
               >
                 +{n}
               </button>
@@ -206,8 +169,8 @@ export default function EggTrackerPage() {
         <div className="mt-8 mb-4 flex justify-center">
           <button
             onClick={handleSave}
-            disabled={(brown === null && white === null) || saveEgg.isPending}
-            className={`w-full max-w-[280px] py-6 rounded-[32px] text-2xl font-black shadow-2xl transition-all active:translate-y-1 active:shadow-xl flex items-center justify-center gap-3 border-b-8 ${brown !== null && white !== null && !saveEgg.isPending
+            disabled={count === null || saveEgg.isPending}
+            className={`w-full max-w-[280px] py-6 rounded-[32px] text-2xl font-black shadow-2xl transition-all active:translate-y-1 active:shadow-xl flex items-center justify-center gap-3 border-b-8 ${count !== null && !saveEgg.isPending
               ? "bg-primary text-white border-primary/20 hover:brightness-110 shadow-primary/30"
               : "bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed shadow-none"
               }`}

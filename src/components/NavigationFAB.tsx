@@ -55,6 +55,14 @@ export function NavigationFAB() {
                         <span>Statistiky</span>
                     </Link>
                     <Link
+                        href="/flock"
+                        onClick={() => setIsOpen(false)}
+                        className="bg-white text-slate-700 shadow-xl rounded-full p-4 flex items-center justify-center gap-3 font-bold hover:bg-slate-50 transition-colors border border-slate-100"
+                    >
+                        <span className="text-xl">🐔</span>
+                        <span>Hejno</span>
+                    </Link>
+                    <Link
                         href="/"
                         onClick={() => setIsOpen(false)}
                         className="bg-white text-slate-700 shadow-xl rounded-full p-4 flex items-center justify-center gap-3 font-bold hover:bg-slate-50 transition-colors border border-slate-100"

@@ -6,8 +6,7 @@ import { api } from "~/trpc/react";
 
 export type OfflineEggRecord = {
     id: string; // lokální ID
-    countBrown: number;
-    countWhite: number;
+    count: number;
     date: string; // ISO string
 };
 
@@ -34,8 +33,7 @@ export function OfflineSync() {
                 // Posíláme postupně
                 for (const egg of eggs) {
                     await saveEgg.mutateAsync({
-                        countBrown: egg.countBrown,
-                        countWhite: egg.countWhite,
+                        count: egg.count,
                         date: new Date(egg.date),
                     });
                 }

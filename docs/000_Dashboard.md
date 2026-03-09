@@ -1,13 +1,13 @@
 ---
 project: Slepicarna
-status: 🏗️ Fáze 2 - Statistiky
+status: 🏗️ Fáze 4 - PWA & Offline
 priority: P1
-tags: [logging, egg-tracker, prisma, sqlite, nextjs]
+tags: [logging, egg-tracker, prisma, sqlite, nextjs, pwa]
 ---
 
 # 🥚 Slepicarna - Dashboard
 
-> Blesková evidence snůšky vajec a byznys analýza pro Taťku a Švagra.
+> Blesková evidence snůšky vajec a byznys analýza pro Taťku a Švagra. Systém nedávno přešel na zjednodušenou evidenci s jedním typem vajec a samostatným počítáním velikosti hejna.
 
 ## 🎯 Rychlý přístup
 - [[SPECS/ROADMAP|🗺️ Kompletní Roadmapa & Zadání]]
@@ -24,7 +24,7 @@ tags: [logging, egg-tracker, prisma, sqlite, nextjs]
 ## 🚦 Průběh Fází
 - [x] **Fáze 0**: Security & PIN Auth
 - [x] **Fáze 1**: Core Sběr (UI mřížka + tRPC)
-- [x] **Fáze 2**: Statistiky (Grafy pro Švagra)
+- [x] **Fáze 2**: Statistiky (Sjednocená snůška, Hejno pro Švagra)
 - [x] **Fáze 3**: Finance & Sklad
 - [x] **Fáze 4**: PWA & Offline
 

@@ -4,38 +4,37 @@
 Projekt **Slepičárna** je moderní progresivní webová aplikace (PWA) určená pro malochovatele drůbeže. Převádí tradiční, často papírovou evidenci sběru vajec a krmiva do digitální podoby, která je optimalizovaná pro použití přímo v terénu (u kurníku). Aplikace kombinuje extrémně jednoduché rozhraní pro starší generace s hlubokou datovou analytikou pro ekonomické vyhodnocení chovu.
 
 ## 2. Definice problému (Problem Statement)
-*   **Nepřesná evidence:** Sběr vajec je často zaznamenáván nárazově nebo vůbec, což vede ke ztrátě přehledu o výkonnosti jednotlivých chovných skupin (hnědé vs. bílé slepice).
+*   **Nepřesná evidence:** Sběr vajec je často zaznamenáván nárazově nebo vůbec, což vede ke ztrátě přehledu o globální výkonnosti hejna.
 *   **Netransparentní sklad:** Členové rodiny nebo sousedé si berou vejce ("odběry"), aniž by bylo jasné, kolik jich aktuálně zbývá v lednici bez fyzické inventury.
-*   **Skryté náklady:** Chovatelé často netuší, kolik je skutečně stojí jedno domácí vejce po započtení nákladů na krmivo, což ztěžuje nastavení prodejní ceny.
-*   **Technologická bariéra:** Existující zemědělské systémy jsou příliš komplexní pro hobby chovatele a nejsou uzpůsobeny pro ovládání jednou rukou venku na slunci.
+*   **Skryté náklady a výnosnost:** Chovatelé často netuší, kolik je skutečně stojí jedno domácí vejce a kolik jich průměrně snese jedna slepice. Chybí snadná evidence velikosti hejna a následné rozvedení do čísel.
+*   **Technologická bariéra:** Existující zemědělské systémy jsou příliš komplexní pro hobby chovatele a nejsou uzpůsobeny pro snadné ovládání přímo u kurníku.
 
 ## 3. Cílové skupiny (Persona Analysis)
-Aplikace obsluhuje tři klíčové archetypy uživatelů:
-1.  **Taťka (Operativa):** Potřebuje obří tlačítka, haptickou odezvu a nulovou administrativní zátěž. Chce jen "pípnout" počet sebraných vajec.
-2.  **Filip (Druhý producent):** Spravuje vlastní skupinu slepic a chce mít oddělenou statistiku své produkce v rámci jednoho systému.
-3.  **Švagr (Analytik):** Zajímají ho grafy, trendy, návratnost investic (ROI) a cena za kus. Chce vědět, jestli se chov ekonomicky vyplatí.
+Aplikace obsluhuje dvě klíčové archetypy uživatelů:
+1.  **Taťka/Farmář (Operativa):** Potřebuje veliká tlačítka, haptickou odezvu a co nejmenší administrativní zátěž. Chce jen "pípnout" celkový počet sebraných vajec nebo rovnou zapsat nový počet slepic v hejně.
+2.  **Analytik (Švagr/Zvědavec):** Zajímají ho grafy, trendy, průměrná nosnost jedné slepice, návratnost investic (ROI) a cena za jedno vejce. Chce vidět globální zdraví byznysu přes posuvné období úrody (14 dní, rok atd.).
 
 ## 4. Klíčové funkce (Solution)
 
-### A. Digitální sběrna
-*   Rychlé přičítání vajec pomocí velkých touch targetů.
-*   Rozlišení produkce podle barvy/skupiny (Hnědá vs. Bílá).
+### A. Digitální sběrna a Hejno
+*   Rychlé přičítání snesených vajec celkem pomocí velkých touch targetů.
+*   Samostatná evidence "Hejna" pro uchování historie změn počtu slepic probíhajících v reálném čase mimo běžný denní sběr.
 *   Možnost zpětné editace a výběru data.
 
 ### B. Virtuální sklad a odběry
-*   Aktuální stav zásob v reálném čase.
-*   Evidence "odběrů" (kdo si vzal kolik vajec) s možností zanechat vzkaz ("Díky za vajíčka!").
-*   Automatické odečítání ze skladu.
+*   Aktuální stav společných zásob v reálném čase.
+*   Evidence "odběrů" (kdo si vzal kolik vajec, do jakých krabiček) s možností zanechat vzkaz ("Díky za vajíčka!").
+*   Automatické odečítání ze skladu vajec k odbavení a zachování finanční plynulosti.
 
 ### C. Finanční modul (Ekonomika chovu)
 *   Evidence příjmů (prodej vajec) a výdajů (krmivo, vybavení).
-*   **Production Cost Ratio:** Automatický výpočet "ceny za vejce" na základě nákladů na krmivo v posledním období.
-*   Výpočet celkového zisku/ztráty (ROI).
+*   **Production Cost Ratio:** Automatický výpočet "ceny za vejce" na základě nákladů na nedávně koupené krmivo.
+*   Výpočet celkového zisku či ztráty (ROI).
 
 ### D. Analytics Dashboard
-*   14denní trendy snůšky.
-*   Podíly produkce jednotlivých skupin.
-*   Exporty do PDF pro archivaci nebo tisk reportů.
+*   Dynamický graf "Vývoj snůšky" pro vybraná časová období (např. 14 dní, měsíc, půlrok, rok).
+*   Výpočet objemu průměrné snášky vajec za den napojený na průběžnou historii velikosti hejna -> výsledkem je přesná metrika **vajec na slepici/den**.
+*   Historie sběrů a exportů.
 
 ## 5. Vizuální a technická identita
 *   **Modern Country:** Design, který propojuje rustikální prvky (Terakota, Sláma) s moderní čistou typografií (Inter, Fraunces).

@@ -19,8 +19,7 @@ export function useSaveEgg() {
 
         eggs.push({
           id: crypto.randomUUID(),
-          countBrown: variables.countBrown,
-          countWhite: variables.countWhite,
+          count: variables.count,
           date: variables.date ? variables.date.toISOString() : new Date().toISOString()
         });
 

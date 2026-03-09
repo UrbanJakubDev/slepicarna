@@ -22,7 +22,7 @@ export default function FinancePage() {
     const isLoading = isEggsLoading || isTransactionsLoading;
 
     // --- Výpočty skladu ---
-    const totalLaid = (records || []).reduce((sum: number, r: any) => sum + r.countBrown + r.countWhite, 0);
+    const totalLaid = (records || []).reduce((sum: number, r: any) => sum + r.count, 0);
     const totalSold = (transactions || []).filter((t: any) => t.type === "SALE").reduce((sum: number, t: any) => sum + (t.quantity || 0), 0);
 
     // Tohle je jen prostý rozdíl – "zbytek" co leží v lednici nebo se už snědl rodinou
